@@ -1,6 +1,6 @@
-const input = document.getElementById("input");
-const btnAgregarDatos = document.getElementById("btnAgregarDatos");
-const Porcentaje = document.getElementById("Porcentaje");
+//const input = document.getElementById("input");
+//const btnAgregarDatos = document.getElementById("btnAgregarDatos");
+//const Porcentaje = document.getElementById("Porcentaje");
 const formaingresar = document.getElementById("formaingresar");
 var auth = firebase.auth();
 var dataArray;
@@ -31,6 +31,7 @@ formaingresar.addEventListener("submit", (e) => {
   });
 })
 
+/*
 input.addEventListener("change", function() {
   dataArray = [];
   total = 0;
@@ -112,3 +113,4 @@ async function agregar() {
   saveAs(new Blob([s2ab(wbout)],{type:"application/octet-stream"}), 'test.xlsx');
 }
 
+*/
