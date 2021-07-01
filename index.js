@@ -16,7 +16,7 @@ auth.onAuthStateChanged(user => {
   }
 });
 
-btnIngresar.addEventListener("submit", () => {
+btnIngresar.addEventListener("click", () => {
   console.log("Entro")
 
   let correo = formaingresar['correo'].value;
