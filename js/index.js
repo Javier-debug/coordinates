@@ -1,6 +1,9 @@
 //const input = document.getElementById("input");
 //const btnAgregarDatos = document.getElementById("btnAgregarDatos");
 //const Porcentaje = document.getElementById("Porcentaje");
+const loggedin = document.querySelectorAll(".logged-in");
+const unlogged = document.querySelectorAll(".unlogged");
+var salir = document.getElementById("salir");
 const formaingresar = document.getElementById("formaingresar");
 const btnIngresar = document.getElementById("btnIngresar");
 var auth = firebase.auth();
@@ -10,11 +13,20 @@ var total = 0;
 auth.onAuthStateChanged(user => {
   if(user) {
     console.log("Usuario loggeado")
+    loggedin.forEach(item => item.style.display = "block");
+    unlogged.forEach(item => item.style.display = "none");
   }
   else {
     console.log("Usuario no loggeado")
+    loggedin.forEach(item => item.style.display = "none");
+    unlogged.forEach(item => item.style.display = "block");
   }
 });
+
+salir.addEventListener("click", (e) => {
+  e.preventDefault();
+  auth.signOut()
+})
 
 btnIngresar.addEventListener("click", () => {
   let correo = formaingresar['correo'].value;
