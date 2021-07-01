@@ -1,0 +1,18 @@
+.unlogged {
+  display: block;
+  position: fixed; /* or absolute */
+  top: 20%;
+}
+
+.semiNavbar {
+  background-color: gray;
+  padding: 10px;
+  color: white;
+  height: 50px;
+}
+
+.makeShadow {
+  -webkit-box-shadow: 10px 10px 15px 0px rgba(0,0,0,0.75);
+-moz-box-shadow: 10px 10px 15px 0px rgba(0,0,0,0.75);
+box-shadow: 10px 10px 15px 0px rgba(0,0,0,0.75);
+}
