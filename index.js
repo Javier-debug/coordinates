@@ -2,6 +2,7 @@
 //const btnAgregarDatos = document.getElementById("btnAgregarDatos");
 //const Porcentaje = document.getElementById("Porcentaje");
 const formaingresar = document.getElementById("formaingresar");
+const btnIngresar = document.getElementById("btnIngresar");
 var auth = firebase.auth();
 var dataArray;
 var total = 0;
@@ -15,9 +16,8 @@ auth.onAuthStateChanged(user => {
   }
 });
 
-formaingresar.addEventListener("submit", (e) => {
+btnIngresar.addEventListener("submit", () => {
   console.log("Entro")
-  e.preventDefault();
 
   let correo = formaingresar['correo'].value;
   let contrasenia = formaingresar['contraseña'].value;
