@@ -1,9 +1,35 @@
 const input = document.getElementById("input");
 const btnAgregarDatos = document.getElementById("btnAgregarDatos");
-const Porcentaje = document.getElementById("Porcentaje")
+const Porcentaje = document.getElementById("Porcentaje");
+const formaingresar = document.getElementById("formaingresar");
+var auth = firebase.auth();
 var dataArray;
 var total = 0;
 
+auth.onAuthStateChanged(user => {
+  if(user) {
+    console.log("Usuario loggeado")
+  }
+  else {
+    console.log("Usuario no loggeado")
+  }
+});
+
+formaingresar.addEventListener("submit", (e) => {
+  e.preventDefault();
+
+  let correo = formaingresar['correo'].value;
+  let contrasenia = formaingresar['contraseña'].value;
+
+  auth.signInWithEmailAndPassword(correo, contrasenia).then(credencial => {
+    $('#ingresarModal').modal('hide');
+    formaingresar.reset();
+    formaingresar.querySelector('.error').innerHTML = ''
+  }).catch(error => {
+    console.log(error);
+    formaingresar.querySelector('.error').innerHTML = mensajeError(error.code)
+  });
+})
 
 input.addEventListener("change", function() {
   dataArray = [];
