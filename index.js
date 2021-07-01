@@ -16,6 +16,7 @@ auth.onAuthStateChanged(user => {
 });
 
 formaingresar.addEventListener("submit", (e) => {
+  console.log("Entro")
   e.preventDefault();
 
   let correo = formaingresar['correo'].value;
