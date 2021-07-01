@@ -23,6 +23,11 @@
   <!--Modal para ingresar-->
   <div class="semiNavbar">
     <h4>Obtencion de coordenadas</h4>
+    <span class="logged-in">
+      <!--<img src="./img/logout.png" alt="Salir" style="background-color: white; border-radius: 50%;" width="40px" id="salir" height="auto">-->
+      <i class="fas fa-sign-out-alt" id="salir">Salir</i>
+      
+    </span>
   </div>
   <div class="modal unlogged" id="ingresarModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog makeShadow" role="document">
@@ -50,7 +55,7 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button type="submit" id="btnIngresar" class="btn btn-primary">Ingresar</button>
+          <button type="submit" id="btnIngresar" class="btn btn-danger">Ingresar</button>
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
         </div>
       </div>

@@ -17,8 +17,6 @@ auth.onAuthStateChanged(user => {
 });
 
 btnIngresar.addEventListener("click", () => {
-  console.log("Entro")
-
   let correo = formaingresar['correo'].value;
   let contrasenia = formaingresar['contraseña'].value;
 

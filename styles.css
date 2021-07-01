@@ -9,6 +9,8 @@
   padding: 10px;
   color: white;
   height: 50px;
+  display: flex;
+  justify-content: space-between;
 }
 
 .makeShadow {
