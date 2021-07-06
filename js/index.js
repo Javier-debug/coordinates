@@ -11,6 +11,7 @@ const btnAgregarDatos = document.getElementById("btnAgregarDatos");
 const numb = document.querySelector(".number");
 let counter = 0;
 var myInterval = null;
+var secondInterval = null;
 const loggedin = document.querySelectorAll(".logged-in");
 const unlogged = document.querySelectorAll(".unlogged");
 var salir = document.getElementById("salir");
@@ -127,19 +128,36 @@ async function agregar() {
   for (var i = 0; i < dataArray.length; i++) {
     wb.SheetNames.push("Hoja" + (i + 1));
     for(var j = 0; j < dataArray[i].length; j++) {
-      await geocoder.geocode( { 'address': dataArray[i][j][0]}, function(results, status) {
-        if (status === google.maps.GeocoderStatus.OK && results.length > 0) {
-          var latitude = results[0].geometry.location.lat();
-          var longitude = results[0].geometry.location.lng();
-          dataArray[i][j].push(latitude);
-          dataArray[i][j].push(longitude);
-          count++;
-        } 
-        else {
-          dataArray[i][j].push(0);
+      try {
+        await geocoder.geocode( { 'address': dataArray[i][j][0]}, function(results, status) {
+          if (status === google.maps.GeocoderStatus.OK && results.length > 0) {
+            var latitude = results[0].geometry.location.lat();
+            var longitude = results[0].geometry.location.lng();
+            dataArray[i][j].push(latitude);
+            dataArray[i][j].push(longitude);
+            count++;
+          } 
+          else {
+            dataArray[i][j].push(0);
+          }
+        }); 
+        if (count == total - 1) {
+          clearInterval(myInterval);
+          progress2.style.animationPlayState = "running";
+          lblCompletados.innerText = "Registros completados: " + (count + 1) + "/"+total;
+          secondInterval = setInterval(secondTimer, 50);
         }
-      }); 
-      await new Promise(r => setTimeout(r, 1000));
+      }
+      catch(error) {
+        dataArray[i][j].push(0);
+        if (count == total - 1) {
+          clearInterval(myInterval);
+          progress2.style.animationPlayState = "running";
+          lblCompletados.innerText = "Registros completados: " + (count + 1) + "/"+total;
+          secondInterval = setInterval(secondTimer, 50);
+        }
+      }
+      await new Promise(r => setTimeout(r, 500));
     }
     var ws = XLSX.utils.aoa_to_sheet(dataArray[i]);
     wb.Sheets["Hoja" + (i + 1)] = ws;
@@ -206,7 +224,14 @@ function myTimer() {
     progress1.style.animationPlayState = "paused";
     progress2.style.animationPlayState = "paused";
   }
-  if (count == total && terminado == porc) {
-    clearInterval(myInterval);
+}
+
+function secondTimer() {
+  if (terminado < 100) {
+    terminado++;
+    numb.textContent = terminado + "%"
+  }
+  else {
+    clearInterval(secondInterval);
   }
 }
