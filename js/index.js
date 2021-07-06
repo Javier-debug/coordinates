@@ -4,6 +4,8 @@ const input = document.getElementById("input");
 const progress1 = document.getElementById("progress1");
 const progress2 = document.getElementById("progress2");
 const lblFileName = document.getElementById("lblFileName");
+const lblRegistros = document.getElementById("lblRegistros");
+const lblCompletados= document.getElementById("lblCompletados");
 const btnAgregarDatos = document.getElementById("btnAgregarDatos");
 //const Porcentaje = document.getElementById("Porcentaje");
 const numb = document.querySelector(".number");
@@ -69,7 +71,7 @@ function mensajeError(codigo) {
 }
 
 
-input.addEventListener("change", function() {
+input.addEventListener("change", async function() {
   dataArray = [];
   total = 0;
   progress2.style.animation = "reloadLeft 0.1s linear both";
@@ -80,7 +82,7 @@ input.addEventListener("change", function() {
   numb.textContent = "0%"
 
   lblFileName.innerHTML = input.files[0].name + ' <img src="./img/excel.png" width="25px" height="25px">'
-  readXlsxFile(input.files[0], { getSheets: true }).then(async function(sheets) {
+  await readXlsxFile(input.files[0], { getSheets: true }).then(async function(sheets) {
     for (var i = 0; i < sheets.length; i++) {
       dataArray.push([]);
       //var position = i - 1;
@@ -92,9 +94,12 @@ input.addEventListener("change", function() {
       })
     }
   })
+  lblRegistros.innerText = "Registros detectados: " + total;
+  lblRegistros.style.display = "block";
 })
 
 btnAgregarDatos.addEventListener("click", () => {
+  lblCompletados.style.display = "block";
   agregar();
 })
 
@@ -123,7 +128,7 @@ async function agregar() {
     wb.SheetNames.push("Hoja" + (i + 1));
     for(var j = 0; j < dataArray[i].length; j++) {
       await geocoder.geocode( { 'address': dataArray[i][j][0]}, function(results, status) {
-        if (status == google.maps.GeocoderStatus.OK) {
+        if (status === google.maps.GeocoderStatus.OK && results.length > 0) {
           var latitude = results[0].geometry.location.lat();
           var longitude = results[0].geometry.location.lng();
           dataArray[i][j].push(latitude);
@@ -131,7 +136,7 @@ async function agregar() {
           count++;
         } 
         else {
-          dataArray[i][j].push("Error")
+          dataArray[i][j].push(0);
         }
       }); 
       await new Promise(r => setTimeout(r, 1000));
@@ -180,6 +185,7 @@ function myTimer() {
     clearInterval(myInterval);
   }
   */
+  lblCompletados.innerText = "Registros completados: " + count + "/"+total;
   porc = (count * 100) / total;
   var speed = (total * 51) / 5
   if (terminado < porc) {
