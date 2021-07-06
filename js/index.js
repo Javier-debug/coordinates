@@ -134,6 +134,7 @@ async function agregar() {
           dataArray[i][j].push("Error")
         }
       }); 
+      await new Promise(r => setTimeout(r, 1000));
     }
     var ws = XLSX.utils.aoa_to_sheet(dataArray[i]);
     wb.Sheets["Hoja" + (i + 1)] = ws;
