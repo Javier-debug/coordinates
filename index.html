@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>Coordenadas</title>
   <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-firestore.js"></script>
@@ -22,12 +22,17 @@
   -->
   <!--Modal para ingresar-->
   <div class="semiNavbar">
+    
+    <img src="./img/potosi.png" width="250px" height="50px" alt="">
     <h4>Obtencion de coordenadas</h4>
     <span class="logged-in">
       <!--<img src="./img/logout.png" alt="Salir" style="background-color: white; border-radius: 50%;" width="40px" id="salir" height="auto">-->
       <i class="fas fa-sign-out-alt" id="salir">Salir</i>
       
     </span>
+  </div>
+  <div class="secondbar">
+
   </div>
   <div class="modal unlogged" id="ingresarModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog makeShadow" role="document">
@@ -60,6 +65,45 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <div class="logged-in">
+    <div class="container">
+      <div class="row">
+    
+        <div class="col-12 col-md-6">
+          
+          <!--<label for="file"><i class="fas fa-upload"></i> <p>Selecciona el archivo</p></label>-->
+          <div class="input-group mb-3" style="margin-top: 10px;">
+            
+            <div style="display: flex;">
+              <label style="width: 300px; margin-top: 5px;">Nombre del archivo: </label>
+              <input type="file" class="custom-file-input" id="input" aria-describedby="inputGroupFileAddon03" accept=".xlsx">
+              <label class="custom-file-label" for="inputGroupFile03" id="lblFileName">SELECCIONAR ARCHIVO <img src="./img/excel.png" width="25px" height="25px"></label>
+            </div>
+          </div>
+          <button id="btnAgregarDatos" class="getCoor">Obtener coordenadas</button>
+
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="circular">
+            <div class="inner"></div>
+            <div class="number">0%</div>
+            <div class="circle">
+              <div class="bar left">
+                <div id="progress1" class="progress"></div>
+              </div>
+              <div class="bar right">
+                <div id="progress2" class="progress"></div>
+              </div>
+            </div>
+          </div>
+        </div>        
+        
+      </div>
+    </div>
+    
+    
   </div>
 </body>
 

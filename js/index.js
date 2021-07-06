@@ -1,6 +1,14 @@
-//const input = document.getElementById("input");
-//const btnAgregarDatos = document.getElementById("btnAgregarDatos");
+const input = document.getElementById("input");
+//const iniciar = document.getElementById("iniciar");
+//const detener = document.getElementById("detener");
+const progress1 = document.getElementById("progress1");
+const progress2 = document.getElementById("progress2");
+const lblFileName = document.getElementById("lblFileName");
+const btnAgregarDatos = document.getElementById("btnAgregarDatos");
 //const Porcentaje = document.getElementById("Porcentaje");
+const numb = document.querySelector(".number");
+let counter = 0;
+var myInterval = null;
 const loggedin = document.querySelectorAll(".logged-in");
 const unlogged = document.querySelectorAll(".unlogged");
 var salir = document.getElementById("salir");
@@ -9,15 +17,16 @@ const btnIngresar = document.getElementById("btnIngresar");
 var auth = firebase.auth();
 var dataArray;
 var total = 0;
+var porc = 0; 
+var count = 0;
+var terminado = 0;
 
 auth.onAuthStateChanged(user => {
   if(user) {
-    console.log("Usuario loggeado")
     loggedin.forEach(item => item.style.display = "block");
     unlogged.forEach(item => item.style.display = "none");
   }
   else {
-    console.log("Usuario no loggeado")
     loggedin.forEach(item => item.style.display = "none");
     unlogged.forEach(item => item.style.display = "block");
   }
@@ -37,7 +46,6 @@ btnIngresar.addEventListener("click", () => {
     formaingresar.reset();
     formaingresar.querySelector('.error').innerHTML = ''
   }).catch(error => {
-    console.log(error);
     formaingresar.querySelector('.error').innerHTML = mensajeError(error.code)
   });
 })
@@ -60,45 +68,33 @@ function mensajeError(codigo) {
   return mensaje;
 }
 
-/*
+
 input.addEventListener("change", function() {
   dataArray = [];
   total = 0;
+  progress2.style.animation = "reloadLeft 0.1s linear both";
+  progress2.style.animationPlayState = "running";
+  progress1.style.animation = "reloadLeft 0.1s linear both";
+  progress1.style.animationPlayState = "running";
+  progress1.style.animationDelay = "0.1s"
+  numb.textContent = "0%"
+
+  lblFileName.innerHTML = input.files[0].name + ' <img src="./img/excel.png" width="25px" height="25px">'
   readXlsxFile(input.files[0], { getSheets: true }).then(async function(sheets) {
     for (var i = 0; i < sheets.length; i++) {
       dataArray.push([]);
       //var position = i - 1;
       await readXlsxFile(input.files[0], { sheet: i + 1 }).then(async function(sheetData) {
         for (var a = 0; a < sheetData.length; a++) {
-          console.log(sheetData[a][0])
           dataArray[i].push([sheetData[a][0]])
           total++;
         }
       })
     }
   })
-  console.log(dataArray[0])
 })
-
-
-btnLocation.addEventListener("click", () => {
-  
-  console.log(dataArray[0])
-  //geocoder.geocode( { 'address': txtAddress.value}, function(results, status) {
-    //console.log(results[0].geometry.location)
-    //if (status == google.maps.GeocoderStatus.OK) {
-      //var latitude = results[0].geometry.location.lat();
-      //var longitude = results[0].geometry.location.lng();
-      //lblLat.innerHTML = "Latitud: " + latitude;
-      //lblLng.innerHTML = "Longitud: " + longitude;
-    //} 
-  //}); 
-})
-
-
 
 btnAgregarDatos.addEventListener("click", () => {
-  //console.log(dataArray)
   agregar();
 })
 
@@ -110,24 +106,29 @@ function s2ab(s) {
 }
 
 async function agregar() {
-  var porc = 0; 
-  var count = 0;
-  var geocoder = new google.maps.Geocoder();
+  porc = 0; 
+  count = 0;
+  terminado = 0;
+  progress1.style.animation = "left 4s linear both";
+  progress2.style.animation = "left 4s linear both";
+  progress1.style.animationPlayState = "paused";
+  progress2.style.animationPlayState = "paused";
+  progress1.style.animationDuration = ((total)/100) + "s"
+  progress2.style.animationDuration = ((total)/100) + "s"
 
+  var geocoder = new google.maps.Geocoder();
+  myInterval = setInterval(myTimer, 50);
   var wb = XLSX.utils.book_new();
   for (var i = 0; i < dataArray.length; i++) {
     wb.SheetNames.push("Hoja" + (i + 1));
     for(var j = 0; j < dataArray[i].length; j++) {
-      //console.log(dataArray[i][j][0])
       await geocoder.geocode( { 'address': dataArray[i][j][0]}, function(results, status) {
-        //console.log(results[0].geometry.location)
         if (status == google.maps.GeocoderStatus.OK) {
           var latitude = results[0].geometry.location.lat();
           var longitude = results[0].geometry.location.lng();
-          dataArray[i][j].push(latitude + ", " + longitude);
+          dataArray[i][j].push(latitude);
+          dataArray[i][j].push(longitude);
           count++;
-          porc = (count * 100) / total;
-          Porcentaje.innerHTML = porc + "%";
         } 
         else {
           dataArray[i][j].push("Error")
@@ -139,7 +140,66 @@ async function agregar() {
   }
 
   var wbout = XLSX.write(wb, {bookType:'xlsx',  type: 'binary'});
-  saveAs(new Blob([s2ab(wbout)],{type:"application/octet-stream"}), 'test.xlsx');
+  saveAs(new Blob([s2ab(wbout)],{type:"application/octet-stream"}), 'coordenadas.xlsx');
 }
 
+/*
+iniciar.addEventListener("click", () => {
+  myInterval = setInterval(myTimer, 800);
+  progress1.style.animationDuration = "2.55s"
+  progress2.style.animationDuration = "2.55s"
+  if(counter < 2) {
+    progress1.style.animationPlayState = "running";
+  }
+  else {
+    progress2.style.animationPlayState = "running";
+  }
+  
+})
+
+detener.addEventListener("click", () => {
+  clearInterval(myInterval);
+  progress1.style.animationPlayState = "paused";
+  progress2.style.animationPlayState = "paused";
+})
 */
+
+function myTimer() {
+  
+  /*
+  if (counter < 5) {
+    if(counter >= 2) {
+      progress1.style.animationPlayState = "paused";
+      progress2.style.animationPlayState = "running";
+    }
+    counter++;
+    numb.textContent = counter + "%"
+  }
+  else {
+    clearInterval(myInterval);
+  }
+  */
+  porc = (count * 100) / total;
+  var speed = (total * 51) / 5
+  if (terminado < porc) {
+    progress1.style.animationDuration = "2.5s"
+    progress2.style.animationDuration = "2.5s"
+    terminado++;
+    numb.textContent = terminado + "%"
+    if (terminado > 51){
+      progress1.style.animationPlayState = "paused";
+      progress2.style.animationPlayState = "running";
+    }
+    else {
+      progress1.style.animationPlayState = "running";
+      progress2.style.animationPlayState = "paused";
+    }
+  }
+  else {
+    progress1.style.animationPlayState = "paused";
+    progress2.style.animationPlayState = "paused";
+  }
+  if (count == total && terminado == porc) {
+    clearInterval(myInterval);
+  }
+}

@@ -2,19 +2,40 @@
   display: block;
   position: fixed; /* or absolute */
   top: 20%;
+  display: none;
+}
+
+.logged-in {
+  display: none;
 }
 
 .semiNavbar {
-  background-color: gray;
-  padding: 10px;
-  color: white;
-  height: 50px;
+  background-color: rgb(211, 211, 211);
+  color: black;
+  height: 70px;
   display: flex;
-  justify-content: space-between;
+}
+
+.semiNavbar h4 {
+  border-left: 1px solid;
+  padding-left: 15px;
+  margin-left: 10px;
+  padding-top: 18px;
+  height: 70px;
+}
+
+.semiNavbar img {
+  margin: 10px;
 }
 
 span:hover {
   cursor: pointer;
+}
+
+span {
+  position: absolute;
+  right: 10px;
+  top: 18px;
 }
 
 i:hover {
@@ -30,4 +51,136 @@ box-shadow: 10px 10px 15px 0px rgba(0,0,0,0.75);
 .custom-header {
   background-color: #c82333;
   color: white;
+}
+
+.custom-file-label::after {
+  display: none;
+}
+
+.custom-file-label {
+  right: auto;
+  left: 180px;
+  width: 325px;
+
+}
+
+.custom-file-label img {
+  position: absolute;
+  right: 10px;
+
+}
+
+
+i {
+  padding-right: 5px;
+}
+
+.actionContent {
+  margin: auto;
+  text-align: center;
+}
+
+.getCoor {
+  background-color: #c82333;
+  color: white;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  border-radius: 5px;
+  border-color: #c82333;
+}
+
+.circular {
+  height: 200px;
+  width: 200px;
+  position: relative;
+  left: 50%;
+}
+
+.circular .inner{
+  position: absolute;
+  z-index: 6;
+  top: 33%;
+  left: 33%;
+  height: 150px;
+  width: 150px;
+  margin: -40px 0 0 -40px;
+  background-color: rgb(211, 211, 211);
+  border-radius: 100%;
+  border:solid gray;
+}
+
+.circular .number{
+  position:absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  font-size: 18px;
+  font-weight: bold;
+  color: red;
+}
+
+.circular .bar{
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  -webkit-border-radius: 100%;
+  clip: rect(0px, 200px, 200px, 100px);
+}
+
+.circle .bar .progress{
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background: #c82333;
+  clip: rect(0px, 100px, 200px, 0px);
+  border-radius: 100%;
+}
+
+.circle .left .progress{
+  z-index: 1;
+  animation: left 4s linear both;
+  animation-play-state: paused;
+}
+
+@keyframes left {
+  100%{
+    transform: rotate(180deg);
+  }
+}
+
+@keyframes reloadLeft {
+  from {
+    transform: rotate(180deg)
+  }
+  to {
+    transform: rotate(0deg)
+  }
+}
+
+.circle .right{
+  transform: rotate(180deg);
+}
+
+.circle .right .progress{
+  animation: right 4s linear both;
+  animation-play-state: paused;
+}
+
+@keyframes right {
+  100%{
+    transform: rotate(180deg);
+  }
+}
+
+.container {
+  margin-top: 55px;
+}
+
+.secondbar {
+  width: 100%; 
+  height: 40px; 
+  background-color: gray;
 }
