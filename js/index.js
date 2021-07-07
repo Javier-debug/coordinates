@@ -149,6 +149,7 @@ async function agregar() {
         }
       }
       catch(error) {
+        console.log(error);
         dataArray[i][j].push(0);
         if (count == total - 1) {
           clearInterval(myInterval);
@@ -157,7 +158,7 @@ async function agregar() {
           secondInterval = setInterval(secondTimer, 50);
         }
       }
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise(r => setTimeout(r, 50));
     }
     var ws = XLSX.utils.aoa_to_sheet(dataArray[i]);
     wb.Sheets["Hoja" + (i + 1)] = ws;
