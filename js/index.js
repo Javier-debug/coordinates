@@ -158,7 +158,7 @@ async function agregar() {
           secondInterval = setInterval(secondTimer, 50);
         }
       }
-      await new Promise(r => setTimeout(r, 50));
+      await new Promise(r => setTimeout(r, 250));
     }
     var ws = XLSX.utils.aoa_to_sheet(dataArray[i]);
     wb.Sheets["Hoja" + (i + 1)] = ws;
