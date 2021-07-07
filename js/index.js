@@ -129,7 +129,7 @@ async function agregar() {
     wb.SheetNames.push("Hoja" + (i + 1));
     for(var j = 0; j < dataArray[i].length; j++) {
       try {
-        if (count%250== 0) {
+        if (count%250== 0 && count != 0) {
           await new Promise(r => setTimeout(r, 30000));
         }
         await geocoder.geocode( { 'address': dataArray[i][j][0]}, function(results, status) {
