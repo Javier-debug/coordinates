@@ -129,6 +129,9 @@ async function agregar() {
     wb.SheetNames.push("Hoja" + (i + 1));
     for(var j = 0; j < dataArray[i].length; j++) {
       try {
+        if (count%250== 0) {
+          await new Promise(r => setTimeout(r, 30000));
+        }
         await geocoder.geocode( { 'address': dataArray[i][j][0]}, function(results, status) {
           if (status === google.maps.GeocoderStatus.OK && results.length > 0) {
             var latitude = results[0].geometry.location.lat();
@@ -158,7 +161,7 @@ async function agregar() {
           secondInterval = setInterval(secondTimer, 50);
         }
       }
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, 500));
     }
     var ws = XLSX.utils.aoa_to_sheet(dataArray[i]);
     wb.Sheets["Hoja" + (i + 1)] = ws;
