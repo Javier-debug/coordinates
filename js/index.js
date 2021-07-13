@@ -57,18 +57,44 @@ async function checkStorage() {
           newExcelData[b].push(number);
           number = "";
           b++;
-          newExcelData.push([]);
+          if (a != sessionStorage.getItem('newExcelData').length - 1) {
+            newExcelData.push([]);
+          }
         }
       }
     }
     (sessionStorage.getItem('finished') != null) ? (finished = parseFloat(sessionStorage.getItem('finished'))) : (finished = 0)
+    console.log(newExcelData.length + ", " + finished)
     ExcelString = sessionStorage.getItem('myArray')
     excelData = ExcelString.split(";");
     await new Promise(r => setTimeout(r, 10000));
     lblCompletados.style.display = "block";
     geocoder = new google.maps.Geocoder();
     myInterval = setInterval(myTimer, 50);
-    thirdInterval = setInterval(getCoord3, 1000)
+    //thirdInterval = setInterval(getCoord3, 1000)
+    for (var a = finished; a < excelData.length - 1; a++) {
+      var response = await getCoord4();
+      if (response == false) {
+        location.reload();
+        return;
+      }
+      if (finished >= parseFloat(sessionStorage.getItem('total'))) {
+        wb = XLSX.utils.book_new();
+        wb.SheetNames.push("Hoja1")
+        var finalArray = [];
+        for (var z = 0; z < excelData.length - 1; z++) {
+          finalArray.push([])
+          finalArray[z].push(excelData[z])
+          finalArray[z].push(newExcelData[z][0])
+          finalArray[z].push(newExcelData[z][1])
+        }
+        var ws = XLSX.utils.aoa_to_sheet(finalArray);
+        wb.Sheets["Hoja1"] = ws;
+        var wbout = XLSX.write(wb, {bookType:'xlsx',  type: 'binary'});
+        saveAs(new Blob([s2ab(wbout)],{type:"application/octet-stream"}), 'coordenadas.xlsx');
+        sessionStorage.clear();
+      }
+    }
   }
 }
 console.log("Total: " + sessionStorage.getItem('total'))
@@ -155,7 +181,7 @@ input.addEventListener("change", async function() {
   lblRegistros.style.display = "block";
 })
 
-btnAgregarDatos.addEventListener("click", () => {
+btnAgregarDatos.addEventListener("click", async () => {
   progress2.style.animation = "left 4s linear both";
   progress2.style.animationPlayState = "paused";
   progress1.style.animation = "right 4s linear both";
@@ -165,7 +191,31 @@ btnAgregarDatos.addEventListener("click", () => {
   excelData = sessionStorage.getItem('myArray').split(";");
   geocoder = new google.maps.Geocoder();
   myInterval = setInterval(myTimer, 50);
-  thirdInterval = setInterval(getCoord3, 1000)
+  for (var a = 0; a < excelData.length - 1; a++) {
+    var response = await getCoord4();
+    console.log(response)
+    if (response == false) {
+      location.reload();
+      return;
+    }
+    if (finished >= parseFloat(sessionStorage.getItem('total'))) {
+      wb = XLSX.utils.book_new();
+      wb.SheetNames.push("Hoja1")
+      var finalArray = [];
+      for (var z = 0; z < excelData.length - 1; z++) {
+        finalArray.push([])
+        finalArray[z].push(excelData[z])
+        finalArray[z].push(newExcelData[z][0])
+        finalArray[z].push(newExcelData[z][1])
+      }
+      var ws = XLSX.utils.aoa_to_sheet(finalArray);
+      wb.Sheets["Hoja1"] = ws;
+      var wbout = XLSX.write(wb, {bookType:'xlsx',  type: 'binary'});
+      saveAs(new Blob([s2ab(wbout)],{type:"application/octet-stream"}), 'coordenadas.xlsx');
+      sessionStorage.clear();
+    }
+  }
+  //thirdInterval = setInterval(getCoord3, 1000)
   //agregar();
 })
 
@@ -378,7 +428,9 @@ async function getCoord3() {
       wb = XLSX.utils.book_new();
       wb.SheetNames.push("Hoja1")
       var finalArray = [];
-      for (var z = 0; z < newExcelData.length; z++) {
+      console.log(excelData.length)
+      console.log(newExcelData.length)
+      for (var z = 0; z < excelData.length - 1; z++) {
         finalArray.push([])
         finalArray[z].push(excelData[z])
         finalArray[z].push(newExcelData[z][0])
@@ -413,6 +465,8 @@ async function getCoord3() {
       for (var a = 0; a < newExcelData.length; a++){
         saveArray += newExcelData[a][0] + ";" + newExcelData[a][1] + ","
       }
+      console.log("finished:" + finished)
+      console.log("newExcelData.length:" + newExcelData.length)
       await new Promise(r => setTimeout(r, 10000));
       //sessionStorage.setItem('finished', (finished - 1));
       sessionStorage.setItem('finished', finished);
@@ -426,4 +480,44 @@ async function getCoord3() {
       finished++;
     }
   }
+}
+
+function getCoord4() {
+  return new Promise(resolve => {
+    setTimeout(async () => {
+      try {
+        await geocoder.geocode( { 'address': excelData[finished]}, function(results, status) {
+          if (status === google.maps.GeocoderStatus.OK && results.length > 0) {
+            var latitude = results[0].geometry.location.lat();
+            var longitude = results[0].geometry.location.lng();
+            newExcelData.push([])
+            newExcelData[finished].push(latitude)
+            newExcelData[finished].push(longitude)
+            finished++;
+            resolve(true);
+          } 
+        }); 
+      }
+      catch(error) {
+        console.log(error)
+        if (error.message.includes("OVER_QUERY_LIMIT")) {
+          var saveArray = "";
+          for (var a = 0; a < newExcelData.length; a++){
+            saveArray += newExcelData[a][0] + ";" + newExcelData[a][1] + ","
+          }
+          await new Promise(r => setTimeout(r, 10000));
+          sessionStorage.setItem('finished', finished);
+          sessionStorage.setItem('newExcelData', saveArray)
+          resolve(false);
+        }
+        else {
+          newExcelData.push([])
+          newExcelData[finished].push("0");
+          newExcelData[finished].push("0");
+          finished++;
+          resolve(true);
+        }
+      }
+    }, 500)
+  })
 }
