@@ -57,9 +57,7 @@ async function checkStorage() {
           newExcelData[b].push(number);
           number = "";
           b++;
-          if (a != sessionStorage.getItem('newExcelData').length - 1) {
-            newExcelData.push([]);
-          }
+          newExcelData.push([]);
         }
       }
     }
