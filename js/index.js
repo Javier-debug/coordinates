@@ -7,11 +7,14 @@ const lblFileName = document.getElementById("lblFileName");
 const lblRegistros = document.getElementById("lblRegistros");
 const lblCompletados= document.getElementById("lblCompletados");
 const btnAgregarDatos = document.getElementById("btnAgregarDatos");
+var geocoder = null
+var reloaded = false;
 //const Porcentaje = document.getElementById("Porcentaje");
 const numb = document.querySelector(".number");
 let counter = 0;
 var myInterval = null;
 var secondInterval = null;
+var thirdInterval = null;
 const loggedin = document.querySelectorAll(".logged-in");
 const unlogged = document.querySelectorAll(".unlogged");
 var salir = document.getElementById("salir");
@@ -23,6 +26,56 @@ var total = 0;
 var porc = 0; 
 var count = 0;
 var terminado = 0;
+var wb = null;
+var newExcelData = [];
+var finished = 0;
+var excelData = null;
+//var i = 0;
+//var j = 0;
+
+checkStorage();
+
+async function checkStorage() {
+  if(sessionStorage.getItem('myArray') != null){
+    finished = 0;
+    total = sessionStorage.getItem('total');
+    var ExcelString = sessionStorage.getItem('newExcelData').toString();
+    var b = 0;
+    var number = "";
+    newExcelData.push([]);
+    for (var a = 0; a < sessionStorage.getItem('newExcelData').length; a++) {
+      if(sessionStorage.getItem('newExcelData')[a] != ";" && sessionStorage.getItem('newExcelData')[a] != ",")
+      {
+        number += sessionStorage.getItem('newExcelData')[a];
+      }
+      else {
+        if (sessionStorage.getItem('newExcelData')[a] == ";") {
+          newExcelData[b].push(number);
+          number = "";
+        }
+        else {
+          newExcelData[b].push(number);
+          number = "";
+          b++;
+          if (a != sessionStorage.getItem('newExcelData').length - 1) {
+            newExcelData.push([]);
+          }
+        }
+      }
+    }
+    (sessionStorage.getItem('finished') != null) ? (finished = parseFloat(sessionStorage.getItem('finished'))) : (finished = 0)
+    ExcelString = sessionStorage.getItem('myArray')
+    excelData = ExcelString.split(";");
+    await new Promise(r => setTimeout(r, 10000));
+    lblCompletados.style.display = "block";
+    geocoder = new google.maps.Geocoder();
+    myInterval = setInterval(myTimer, 50);
+    thirdInterval = setInterval(getCoord3, 1000)
+  }
+}
+console.log("Total: " + sessionStorage.getItem('total'))
+
+
 
 auth.onAuthStateChanged(user => {
   if(user) {
@@ -83,25 +136,39 @@ input.addEventListener("change", async function() {
   numb.textContent = "0%"
 
   lblFileName.innerHTML = input.files[0].name + ' <img src="./img/excel.png" width="25px" height="25px">'
+  var arrayToText = ""
   await readXlsxFile(input.files[0], { getSheets: true }).then(async function(sheets) {
-    for (var i = 0; i < sheets.length; i++) {
+    for (var a = 0; a < sheets.length; a++) {
       dataArray.push([]);
       //var position = i - 1;
-      await readXlsxFile(input.files[0], { sheet: i + 1 }).then(async function(sheetData) {
-        for (var a = 0; a < sheetData.length; a++) {
-          dataArray[i].push([sheetData[a][0]])
+      await readXlsxFile(input.files[0], { sheet: a + 1 }).then(async function(sheetData) {
+        for (var b = 0; b < sheetData.length; b++) {
+          dataArray[a].push([sheetData[b][0]])
+          arrayToText += sheetData[b][0].toString() + ";";
           total++;
         }
       })
     }
+    sessionStorage.setItem('myArray', arrayToText);
+    sessionStorage.setItem('total', total);
+    //location.reload();
   })
   lblRegistros.innerText = "Registros detectados: " + total;
   lblRegistros.style.display = "block";
 })
 
 btnAgregarDatos.addEventListener("click", () => {
+  progress2.style.animation = "left 4s linear both";
+  progress2.style.animationPlayState = "paused";
+  progress1.style.animation = "right 4s linear both";
+  progress1.style.animationPlayState = "paused";
   lblCompletados.style.display = "block";
-  agregar();
+  (sessionStorage.getItem('finished') != null) ? (finished = sessionStorage.getItem('finished')) : (finished = 0)
+  excelData = sessionStorage.getItem('myArray').split(";");
+  geocoder = new google.maps.Geocoder();
+  myInterval = setInterval(myTimer, 50);
+  thirdInterval = setInterval(getCoord3, 1000)
+  //agregar();
 })
 
 function s2ab(s) { 
@@ -115,44 +182,75 @@ async function agregar() {
   porc = 0; 
   count = 0;
   terminado = 0;
-  progress1.style.animation = "left 4s linear both";
-  progress2.style.animation = "left 4s linear both";
-  progress1.style.animationPlayState = "paused";
-  progress2.style.animationPlayState = "paused";
-  progress1.style.animationDuration = ((total)/100) + "s"
-  progress2.style.animationDuration = ((total)/100) + "s"
+  console.log(dataArray[1].length)
 
-  var geocoder = new google.maps.Geocoder();
+  
   myInterval = setInterval(myTimer, 50);
-  var wb = XLSX.utils.book_new();
+  wb = XLSX.utils.book_new();
+  geocoder = new google.maps.Geocoder();
+  //wb.SheetNames.push("Hoja" + (i + 1));
+  //thirdInterval = setInterval(getCoord2, 2000)
+  
   for (var i = 0; i < dataArray.length; i++) {
     wb.SheetNames.push("Hoja" + (i + 1));
     for(var j = 0; j < dataArray[i].length; j++) {
+      var ok = null;
+      if (count % 200 == 0 && count != 0) {
+        console.log("Alto de 5 minutos")
+        await new Promise(r => setTimeout(r, 300000));
+      }
+      ok = await getCoord(i, j);
+      console.log(ok);
+      if (ok == null) {
+        await new Promise(r => setTimeout(r, 30000));
+        j--;
+      }
+      else {
+        if (count == total - 1) {
+          clearInterval(myInterval);
+          progress2.style.animationPlayState = "running";
+          lblCompletados.innerText = "Registros completados: " + (count + 1) + "/"+total;
+          secondInterval = setInterval(secondTimer, 50);
+        }  
+      }
+      //await new Promise(r => setTimeout(r, 1300));
+    }
+    var ws = XLSX.utils.aoa_to_sheet(dataArray[i]);
+    wb.Sheets["Hoja" + (i + 1)] = ws;
+  }
+  
+
+  var wbout = XLSX.write(wb, {bookType:'xlsx',  type: 'binary'});
+  saveAs(new Blob([s2ab(wbout)],{type:"application/octet-stream"}), 'coordenadas.xlsx');
+}
+
+function getCoord(i, j) {
+  return new Promise(resolve => {
+    setTimeout(() => {
       try {
-        //if (count%250== 0 && count != 0) {
-        //  await new Promise(r => setTimeout(r, 30000));
-        //}
-        await geocoder.geocode( { 'address': dataArray[i][j][0]}, function(results, status) {
+        console.log(count)
+        geocoder.geocode( { 'address': dataArray[i][j][0]}, function(results, status) {
           if (status === google.maps.GeocoderStatus.OK && results.length > 0) {
             var latitude = results[0].geometry.location.lat();
             var longitude = results[0].geometry.location.lng();
             dataArray[i][j].push(latitude);
             dataArray[i][j].push(longitude);
             count++;
+            resolve(true);
           } 
-          else {
-            dataArray[i][j].push(0);
+          else if (status == "OVER_QUERY_LIMIT"){
+            console.log(status)
+            //dataArray[i][j].push(0);
+            //count++;
+            geocoder = new google.maps.Geocoder();
+            resolve(null);
           }
         }); 
-        if (count == total - 1) {
-          clearInterval(myInterval);
-          progress2.style.animationPlayState = "running";
-          lblCompletados.innerText = "Registros completados: " + (count + 1) + "/"+total;
-          secondInterval = setInterval(secondTimer, 50);
-        }
       }
       catch(error) {
+        console.log("Error intento: " + count)
         console.log(error);
+        count++;
         dataArray[i][j].push(0);
         if (count == total - 1) {
           clearInterval(myInterval);
@@ -160,15 +258,61 @@ async function agregar() {
           lblCompletados.innerText = "Registros completados: " + (count + 1) + "/"+total;
           secondInterval = setInterval(secondTimer, 50);
         }
+        resolve(false);
       }
-      await new Promise(r => setTimeout(r, 1300));
-    }
-    var ws = XLSX.utils.aoa_to_sheet(dataArray[i]);
-    wb.Sheets["Hoja" + (i + 1)] = ws;
-  }
+    }, 1000);
+  });  
+}
 
-  var wbout = XLSX.write(wb, {bookType:'xlsx',  type: 'binary'});
-  saveAs(new Blob([s2ab(wbout)],{type:"application/octet-stream"}), 'coordenadas.xlsx');
+async function getCoord2 () {
+  try {
+    if (j > dataArray[i].length - 1) {
+      var ws = XLSX.utils.aoa_to_sheet(dataArray[i]);
+      wb.Sheets["Hoja" + (i + 1)] = ws;
+      i++;
+      wb.SheetNames.push("Hoja" + (i + 1));
+      j = 0;
+    }
+    if (i > dataArray.length - 1) {
+      wb.SheetNames.pop();
+      console.log("Se guardara el archivo")
+      var wbout = XLSX.write(wb, {bookType:'xlsx',  type: 'binary'});
+      saveAs(new Blob([s2ab(wbout)],{type:"application/octet-stream"}), 'coordenadas.xlsx');
+      clearInterval(thirdInterval);
+    }
+    else {
+      await geocoder.geocode( { 'address': dataArray[i][j][0]}, function(results, status) {
+        if (status === google.maps.GeocoderStatus.OK && results.length > 0) {
+          var latitude = results[0].geometry.location.lat();
+          var longitude = results[0].geometry.location.lng();
+          dataArray[i][j].push(latitude);
+          dataArray[i][j].push(longitude);
+          count++;
+          j++;
+        } 
+        else if (status == "OVER_QUERY_LIMIT"){
+          console.log(status)
+          //dataArray[i][j].push(0);
+          //count++;
+        }
+      }); 
+    }
+    //console.log(count)
+    
+  }
+  catch(error) {
+    console.log("Error intento: " + count)
+    console.log(error);
+    count++;
+    dataArray[i][j].push(0);
+    j++;
+    if (count == total - 1) {
+      clearInterval(myInterval);
+      progress2.style.animationPlayState = "running";
+      lblCompletados.innerText = "Registros completados: " + (count + 1) + "/"+total;
+      secondInterval = setInterval(secondTimer, 50);
+    }
+  }
 }
 
 /*
@@ -194,22 +338,10 @@ detener.addEventListener("click", () => {
 
 function myTimer() {
   
-  /*
-  if (counter < 5) {
-    if(counter >= 2) {
-      progress1.style.animationPlayState = "paused";
-      progress2.style.animationPlayState = "running";
-    }
-    counter++;
-    numb.textContent = counter + "%"
-  }
-  else {
-    clearInterval(myInterval);
-  }
-  */
-  lblCompletados.innerText = "Registros completados: " + count + "/"+total;
-  porc = (count * 100) / total;
-  var speed = (total * 51) / 5
+  //lblCompletados.innerText = "Registros completados: " + count + "/"+total;
+  //porc = (count * 100) / total;
+  lblCompletados.innerText = "Registros completados: " + finished + "/"+total;
+  porc = (finished * 100) / total;
   if (terminado < porc) {
     progress1.style.animationDuration = "2.5s"
     progress2.style.animationDuration = "2.5s"
@@ -237,5 +369,63 @@ function secondTimer() {
   }
   else {
     clearInterval(secondInterval);
+  }
+}
+
+// Using LocalStorage
+async function getCoord3() {
+  try {
+    if (finished >= parseFloat(sessionStorage.getItem('total'))) {
+      clearInterval(thirdInterval);
+      wb = XLSX.utils.book_new();
+      wb.SheetNames.push("Hoja1")
+      var finalArray = [];
+      for (var z = 0; z < newExcelData.length; z++) {
+        finalArray.push([])
+        finalArray[z].push(excelData[z])
+        finalArray[z].push(newExcelData[z][0])
+        finalArray[z].push(newExcelData[z][1])
+      }
+      var ws = XLSX.utils.aoa_to_sheet(finalArray);
+      wb.Sheets["Hoja1"] = ws;
+      var wbout = XLSX.write(wb, {bookType:'xlsx',  type: 'binary'});
+      saveAs(new Blob([s2ab(wbout)],{type:"application/octet-stream"}), 'coordenadas.xlsx');
+      sessionStorage.clear();
+      
+    }
+    else {
+      await geocoder.geocode( { 'address': excelData[finished]}, function(results, status) {
+        if (status === google.maps.GeocoderStatus.OK && results.length > 0) {
+          var latitude = results[0].geometry.location.lat();
+          var longitude = results[0].geometry.location.lng();
+          newExcelData.push([])
+          newExcelData[finished].push(latitude)
+          newExcelData[finished].push(longitude)
+          finished++;
+        } 
+      }); 
+    }
+  }
+  catch(error) {
+    console.log("Error intento: " + count)
+    console.log(error)
+    if (error.message.includes("OVER_QUERY_LIMIT")) {
+      clearInterval(thirdInterval);
+      var saveArray = "";
+      for (var a = 0; a < newExcelData.length; a++){
+        saveArray += newExcelData[a][0] + ";" + newExcelData[a][1] + ","
+      }
+      await new Promise(r => setTimeout(r, 10000));
+      //sessionStorage.setItem('finished', (finished - 1));
+      sessionStorage.setItem('finished', finished);
+      sessionStorage.setItem('newExcelData', saveArray)
+      location.reload(); 
+    }
+    else {
+      newExcelData.push([])
+      newExcelData[finished].push("0");
+      newExcelData[finished].push("0");
+      finished++;
+    }
   }
 }
